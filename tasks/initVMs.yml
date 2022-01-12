@@ -55,4 +55,3 @@
         path: /etc/ssh/sshd_config
         regexp: "<SSH_PORT_PLACEHOLDER>"
         replace: "{{ ssh_port }}"
-    

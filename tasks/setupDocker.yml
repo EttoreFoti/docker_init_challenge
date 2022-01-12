@@ -1,0 +1,48 @@
+- name: Check if Docker is installed
+  command: systemctl status docker
+  register: docker_check
+  ignore_errors: yes
+
+- name: Install Docker
+  import_task: installDocker.yml
+  when: docker_check.stderr.find('service could not be found') != -1
+
+- name: Enable the Docker daemon in systemd
+  systemd:
+    name: docker
+    enabled: yes
+    masked: no
+
+- name: Start the Docker daemon
+  systemd:
+    name: docker
+    state: started
+    masked: no
+
+- name: Check if Docker Compose is installed
+  command: docker-compose --version
+  register: docker_compose_check
+  ignore_errors: yes
+
+- name: Download and install Docker Compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
+    dest: /usr/bin/docker-compose
+    mode: 0755
+  when:
+    - docker_compose_check.msg is defined
+    - docker_compose_check.msg.find('No such file or directory') != -1
+
+- name: Setup Docker REST API
+  lineinfile:
+    dest: /lib/systemd/system/docker.service
+    line: ExecStart=/usr/bin/dockerd -H fd:// -H=tcp://0.0.0.0:5555
+
+- name: reload systemd
+  sudo: yes
+  command: systemctl daemon-reload
+
+- name: Start the Docker daemon
+  systemd:
+    name: docker
+    state: restarted
