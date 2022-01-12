@@ -55,10 +55,4 @@
         path: /etc/ssh/sshd_config
         regexp: "<SSH_PORT_PLACEHOLDER>"
         replace: "{{ ssh_port }}"
-
-    - name: allow {{ ssh_user_username }} to have passwordless sudo
-      lineinfile:
-        dest: /etc/sudoers
-        line: "{{ ssh_user_username }} ALL=(ALL) NOPASSWD: ALL"
-        validate: "visudo -cf %s"
     
