@@ -2,23 +2,10 @@
 - hosts: hetzner-cloud
   become: yes
   user: root
-  tasks: 
+  tasks:
     ## Install updates
     - name: Update
-      apt:
-        update_cache: true
-        upgrade: dist
-
-    ## Install packages    
-    - name: Install IPTables Persistent
-      apt:
-        name:
-          - iptables-persistent
-          - fail2ban
-          - unattended-upgrades
-        state: present
-        update_cache: true
-      become: true
+      yum: name=* state=latest
 
     ## Create SSH group
     - name: SSH group
@@ -32,8 +19,8 @@
         name: "{{ ssh_user_username }}"
         password: "{{ ssh_user_password | password_hash('sha512') }}"
         groups:
-         - sshusers
-         - sudo
+          - sshusers
+          - sudo
         state: present
         shell: /bin/bash
         system: no
@@ -56,22 +43,6 @@
         group: root
         mode: 0644
 
-    ## IPTables rules
-    - name: Iptables IPv4 rules
-      copy:
-        src: rules.v4
-        dest: /etc/ssh/rules.v4
-        owner: root
-        group: root
-        mode: 0644
-    - name: Iptables IPv6 rules
-      copy:
-        src: rules.v6
-        dest: /etc/ssh/rules.v6
-        owner: root
-        group: root
-        mode: 0644
-
     ## Change root user password
     - name: Root password
       user:
@@ -82,15 +53,12 @@
     - name: Update SSH port in ssh config
       replace:
         path: /etc/ssh/sshd_config
-        regexp: '<SSH_PORT_PLACEHOLDER>'
-        replace: '{{ ssh_port }}'
-    - name: Update SSH port in iptables rules (IPv4)
-      replace:
-        path: /etc/ssh/rules.v4
-        regexp: '<SSH_PORT_PLACEHOLDER>'
-        replace: '{{ ssh_port }}'
-    - name: Update SSH port in iptables rules (IPv6)
-      replace:
-        path: /etc/ssh/rules.v6
-        regexp: '<SSH_PORT_PLACEHOLDER>'
-        replace: '{{ ssh_port }}'
+        regexp: "<SSH_PORT_PLACEHOLDER>"
+        replace: "{{ ssh_port }}"
+
+    - name: allow {{ ssh_user_username }} to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        line: "{{ ssh_user_username }} ALL=(ALL) NOPASSWD: ALL"
+        validate: "visudo -cf %s"
+    
