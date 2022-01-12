@@ -13,16 +13,19 @@ resource "hcloud_server" "web" {
   location = var.location
   name = format("%s-%03d", var.server_name, count.index + 1)
   ssh_keys  = [data.hcloud_ssh_key.ssh_key.id]
-  connection {
-      user = "root"
-      host = hcloud_server.web[count.index].ipv4_address
-      private_key = file(var.hcloud_ssh_key_local_path)
-  }
 }
 
 resource "local_file" "fileappend" {
   content =  "[hetzner-cloud]\n${join("\n", hcloud_server.web.*.ipv4_address)}"
   filename = format("%s/ansible-hosts-config", path.root)
+}
+
+resource "null_resource" "makeConnection" {
+  connection {
+      user = "root"
+      host = hcloud_server.web[count.index].ipv4_address
+      private_key = file(var.hcloud_ssh_key_local_path)
+  }
 }
 
 resource "null_resource" "installansible" {
