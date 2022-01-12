@@ -2,12 +2,30 @@
 # tasks file for docker-init
 - name: Install Docker and Docker Compose on CentOS
   hosts: all
-  become: true
+  gather_facts: true
+  become: yes
+  user: root
   tasks:
     - name: initial config
-      import_task: initVMs.yml
-    
+      import_tasks: ./initVMs.yml
+      
     - name: setup docker
-      import_task: setupDocker.yml
+      import_tasks: setupDocker.yml
+
+
+- name: setup swarm
+  hosts: masters
+  tasks:
+    - name: setup swarm
+      become_user: docker
+      import_tasks: setupDockerSwarm.yml
+
+- name: join Workers
+  hosts: workers
+  tasks:
+    - name: Add Workers to the Swarm
+      shell: "docker swarm join --token {{ hostvars[masters][0]['worker_token']['stdout'] }} {{ hostvars[masters][0]['ansible_default_ipv4']['address'] }}:5555"
+      tags: swarm
+
 
 

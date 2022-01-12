@@ -1,57 +1,67 @@
----
-- hosts: hetzner-cloud
-  become: yes
-  user: root
-  tasks:
-    ## Install updates
-    - name: Update
-      yum: name=* state=latest
+- name: Update System
+  yum: name=* state=latest
 
-    ## Create SSH group
-    - name: SSH group
-      group:
-        name: sshusers
-        state: present
+- name: Create SSH group
+  group:
+    name: sshusers
+    state: present
 
-    ## Create SSH user
-    - name: SSH user
-      user:
-        name: "{{ ssh_user_username }}"
-        password: "{{ ssh_user_password | password_hash('sha512') }}"
-        groups:
-          - sshusers
-          - sudo
-        state: present
-        shell: /bin/bash
-        system: no
-        createhome: yes
-        home: "/home/{{ ssh_user_username }}"
+- name: Create SSH user
+  user:
+    name: "{{ ssh_user_username }}"
+    password: "{{ ssh_user_password | password_hash('sha512') }}"
+    groups:
+      - sshusers
+      - wheel
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: "/home/{{ ssh_user_username }}"
 
-    ## Set SSH user key
-    - name: SSH user key
-      authorized_key:
-        user: "{{ ssh_user_username }}"
-        state: present
-        key: "{{ lookup('file', '{{ ssh_user_keyfile_path }}') }}"
+- name: Set Docker user
+  user:
+    name: docker
+    password: "{{ ssh_user_password | password_hash('sha512') }}"
+    groups:
+      - wheel
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: "/home/docker"
 
-    ## SSH Config
-    - name: SSH Config update
-      copy:
-        src: sshd_config
-        dest: /etc/ssh/sshd_config
-        owner: root
-        group: root
-        mode: 0644
+- name: Set SSH user key
+  authorized_key:
+    user: "{{ ssh_user_username }}"
+    state: present
+    key: "{{ lookup('file', '{{ ssh_user_keyfile_path }}') }}"
 
-    ## Change root user password
-    - name: Root password
-      user:
-        name: root
-        password: "{{ root_password | password_hash('sha512') }}"
+- name: SSH Config update
+  copy:
+    src: ../sshd_config
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
 
-    ## SSH Port
-    - name: Update SSH port in ssh config
-      replace:
-        path: /etc/ssh/sshd_config
-        regexp: "<SSH_PORT_PLACEHOLDER>"
-        replace: "{{ ssh_port }}"
+- name: Set Root password
+  user:
+    name: root
+    password: "{{ root_password | password_hash('sha512') }}"
+
+- name: Update SSH port in ssh config
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "<SSH_PORT_PLACEHOLDER>"
+    replace: "{{ ssh_port }}"
+
+- name: allow to have passwordless sudo
+  with_items:
+    - docker
+    - "{{ ssh_user_username }}"
+  lineinfile:
+    dest: /etc/sudoers
+    line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+    

@@ -7,7 +7,7 @@
 
 - name: "Install Docker and Yum Utils"
   yum: 
-    name: "{{ packages }}"
+    name: "{{ item }}"
     state: present
   with_items: 
     - yum-utils

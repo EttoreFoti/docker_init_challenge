@@ -4,7 +4,7 @@
   ignore_errors: yes
 
 - name: Install Docker
-  import_task: installDocker.yml
+  import_tasks: installDocker.yml
   when: docker_check.stderr.find('service could not be found') != -1
 
 - name: Enable the Docker daemon in systemd
@@ -39,10 +39,49 @@
     line: ExecStart=/usr/bin/dockerd -H fd:// -H=tcp://0.0.0.0:5555
 
 - name: reload systemd
-  sudo: yes
+  become: yes
   command: systemctl daemon-reload
 
 - name: Start the Docker daemon
   systemd:
     name: docker
     state: restarted
+
+- name: Configure Hosts File
+  lineinfile: path=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: "{{ groups['all'] }}"
+- name: Generate SSH keys
+  shell: ssh-keygen -b 2048 -f /home/docker/.ssh/id_rsa -t rsa -q -N ""
+  args:
+    creates: /home/docker/.ssh/id_rsa
+- name: Copy Public Key Locally
+  fetch:
+    src: /home/docker/.ssh/id_rsa.pub
+    dest: /tmp/
+    flat: yes
+- name: Copy SSH Configuration
+  copy:
+    src: ssh_config
+    dest: /home/docker/.ssh/config
+    mode: 0644
+- name: empty known_hosts
+  file:
+    state: absent
+    path: ~/.ssh/known_hosts
+- name: run ssh-keyscan to add keys to known_hosts
+  shell: "ssh-keyscan {{ item }} >> ~/.ssh/known_hosts"
+  with_items: "{{ groups['all'] }}"
+
+- name: Copy Public Key to Other Hosts
+  become: true
+  become_user: docker
+  copy:
+    src: /tmp/id_rsa.pub
+    dest: /tmp/id_rsa.pub
+    mode: 0644
+- name: Append Public key in authorized_keys file
+  authorized_key:
+    user: docker
+    state: present
+    key: "{{ lookup('file', '/tmp/id_rsa.pub') }}"
