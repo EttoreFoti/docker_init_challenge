@@ -1,0 +1,17 @@
+- name: "Add Docker YUM Repository"
+  yum_repository:
+    name: "Docker"
+    description: "Docker Repo"
+    baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable"
+    gpgcheck: "no"
+
+- name: "Install Docker and Yum Utils"
+  yum: 
+    name: "{{ packages }}"
+    state: present
+  with_items: 
+    - yum-utils
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    

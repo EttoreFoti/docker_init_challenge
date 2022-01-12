@@ -1,0 +1,6 @@
+variables.tf
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+versions.tf
+allvars
