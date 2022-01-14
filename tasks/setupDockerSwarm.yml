@@ -4,14 +4,10 @@
   ignore_errors: true
   tags: swarm
 
-- name: Print the gateway for each host when defined
-  ansible.builtin.debug:
-    msg: System {{ groups['masters'] }} 
-
 - name: Initialize Docker Swarm
   shell: >
     docker swarm init
-    --advertise-addr={{ groups['masters'] }}:5555
+    --advertise-addr={{ groups['masters'][0] }}:2377
   when: swarm_status.rc != 0
   run_once: true
   tags: swarm
@@ -22,6 +18,10 @@
   tags: swarm
 
 - name: Get the worker join-token
-  shell: docker swarm join-token --quiet worker
+  shell: "echo '' > /tmp/worker_join.txt && docker swarm join-token worker > /tmp/worker_join.sh"
   register: worker_token
   tags: swarm
+
+
+
+

@@ -9,9 +9,14 @@
     - name: initial config
       import_tasks: ./initVMs.yml
       
+- name: Install Docker and Docker Compose on CentOS
+  hosts: all
+  gather_facts: true
+  become: yes
+  user: docker
+  tasks: 
     - name: setup docker
       import_tasks: setupDocker.yml
-
 
 - name: setup swarm
   hosts: masters
@@ -20,11 +25,19 @@
       become_user: docker
       import_tasks: setupDockerSwarm.yml
 
+
+
 - name: join Workers
   hosts: workers
   tasks:
+    - name: Print the gateway for each host when defined
+      ansible.builtin.debug:
+        msg: System {{ groups["masters"][0] }} 
+    - name: Fetch join token
+      shell: rsync -e "ssh -i /home/docker/.ssh/id_rsa" docker@{{ groups["masters"][0] }}:/tmp/worker_join.sh /tmp/
+      #add with items to loop on multiple workers even if not needed for the challenge for future reuse
     - name: Add Workers to the Swarm
-      shell: "docker swarm join --token {{ hostvars[masters][0]['worker_token']['stdout'] }} {{ hostvars[masters][0]['ansible_default_ipv4']['address'] }}:5555"
+      shell: bash /tmp/worker_join.sh
       tags: swarm
 
 

@@ -30,6 +30,7 @@
     system: no
     createhome: yes
     home: "/home/docker"
+    generate_ssh_key: yes
 
 - name: Set SSH user key
   authorized_key:

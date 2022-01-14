@@ -1,5 +1,5 @@
 - name: Check if Docker is installed
-  command: systemctl status docker
+  shell: systemctl status docker
   register: docker_check
   ignore_errors: yes
 
@@ -20,7 +20,7 @@
     masked: no
 
 - name: Check if Docker Compose is installed
-  command: docker-compose --version
+  shell: docker-compose --version
   register: docker_compose_check
   ignore_errors: yes
 
@@ -35,12 +35,14 @@
 
 - name: Setup Docker REST API
   lineinfile:
-    dest: /lib/systemd/system/docker.service
-    line: ExecStart=/usr/bin/dockerd -H fd:// -H=tcp://0.0.0.0:5555
+    path: /lib/systemd/system/docker.service
+    regexp: 'ExecStart=*'
+    line: ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock -H=tcp://0.0.0.0:2377
+    backrefs: yes
 
 - name: reload systemd
   become: yes
-  command: systemctl daemon-reload
+  shell: systemctl daemon-reload
 
 - name: Start the Docker daemon
   systemd:
@@ -51,24 +53,29 @@
   lineinfile: path=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
   when: hostvars[item].ansible_default_ipv4.address is defined
   with_items: "{{ groups['all'] }}"
-- name: Generate SSH keys
-  shell: ssh-keygen -b 2048 -f /home/docker/.ssh/id_rsa -t rsa -q -N ""
-  args:
-    creates: /home/docker/.ssh/id_rsa
+
+#- name: Generate SSH keys
+#  shell: ssh-keygen -b 2048 -f /home/docker/.ssh/id_rsa -t rsa -q -N ""
+#  args:
+#    creates: /home/docker/.ssh/id_rsa
+
 - name: Copy Public Key Locally
   fetch:
     src: /home/docker/.ssh/id_rsa.pub
     dest: /tmp/
     flat: yes
+
 - name: Copy SSH Configuration
   copy:
     src: ssh_config
     dest: /home/docker/.ssh/config
     mode: 0644
+
 - name: empty known_hosts
   file:
     state: absent
     path: ~/.ssh/known_hosts
+
 - name: run ssh-keyscan to add keys to known_hosts
   shell: "ssh-keyscan {{ item }} >> ~/.ssh/known_hosts"
   with_items: "{{ groups['all'] }}"
@@ -80,6 +87,7 @@
     src: /tmp/id_rsa.pub
     dest: /tmp/id_rsa.pub
     mode: 0644
+
 - name: Append Public key in authorized_keys file
   authorized_key:
     user: docker
