@@ -1,0 +1,39 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: instance1
+    image: geerlingguy/docker-centos7-ansible:latest #image built for complete testing of real testings
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro #needed to use systemd
+    privileged: true #it is needed for systemd, it should be done only with trusted software
+    pre_build_image: true
+    groups: 
+      - masters
+  - name: instance2
+    image: geerlingguy/docker-centos7-ansible:latest #image built for complete testing of real testings
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro #needed to use systemd
+    privileged: true #it is needed for systemd, it should be done only with trusted software
+    pre_build_image: true
+    groups: 
+      - workers
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      masters:
+        - instance1
+      workers:
+        - instance2
+verifier:
+  name: ansible
+# lint: |
+#  set -e
+#  yamllint .
+#  ansible-lint
+#  flake8

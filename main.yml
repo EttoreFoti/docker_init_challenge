@@ -1,0 +1,32 @@
+---
+- name: Install Docker and Docker Compose on CentOS
+  hosts: all
+  gather_facts: true
+  become: yes
+  user: root
+  roles:
+      - initVMs
+      
+- name: Install Docker and Docker Compose on CentOS and set it up
+  hosts: all
+  gather_facts: true
+  become: yes
+  user: docker
+  roles: 
+      - setupDocker
+
+- name: Setup Docker Swarm
+  hosts: masters
+  become: yes
+  become_user: docker
+  roles:
+      - setupDockerSwarm
+
+- name: Generate Token and Join Workers
+  hosts: workers
+  roles:
+      - joinWorkers
+
+
+
+

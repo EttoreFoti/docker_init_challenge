@@ -1,0 +1,29 @@
+
+- name: SSH Config update
+  copy:
+    src: ../files/sshd_config
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set Root password
+  user:
+    name: root
+    password: "{{ root_password | password_hash('sha512') }}"
+
+- name: Update SSH port in ssh config
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "<SSH_PORT_PLACEHOLDER>"
+    replace: "{{ ssh_port }}"
+
+- name: allow to have passwordless sudo
+  with_items:
+    - docker
+    - "{{ ssh_user_username }}"
+  lineinfile:
+    dest: /etc/sudoers
+    line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+    

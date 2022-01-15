@@ -1,0 +1,9 @@
+    - name: Print the gateway for each host when defined
+      ansible.builtin.debug:
+        msg: System {{ groups["masters"][0] }} 
+    - name: Fetch join token
+      shell: rsync -e "ssh -i /home/docker/.ssh/id_rsa" docker@{{ groups["masters"][0] }}:/tmp/worker_join.sh /tmp/
+      #add with items to loop on multiple workers even if not needed for the challenge for future reuse
+    - name: Add Workers to the Swarm
+      shell: bash /tmp/worker_join.sh
+      tags: swarm
