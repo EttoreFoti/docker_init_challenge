@@ -53,11 +53,20 @@
     key: "{{ lookup('file', '{{ ssh_user_keyfile_path }}')  }} "
   when: ssh_user_keyfile_path is defined
 
+- name: Generate ssh key when not given
+  user:
+    name: 
+    generate_ssh_key: yes
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+    ssh_key_file: "/home/.ssh/{{ ssh_user_username | default('ettorefoti') }}/id_rsa"
+    force: no
+
 - name: Set SSH user key in molecule #ask for default
   authorized_key:
     user: "{{ ssh_user_username | default('ettorefoti') }}"
     state: present
-    key: "{{ lookup('file', '~/.ssh/id_rsa.pub')  }} "
+    key: "{{ lookup('file', '../../../id_rsa_test_ansible.pub')  }} "
   when:
     ssh_user_keyfile_path is undefined
     # TODO generate test id rsa
