@@ -3,11 +3,12 @@ name: CI
   pull_request:
   push:
     branches:
-      - master
+      - main
 jobs:
   test:
     name: Molecule
     runs-on: ubuntu-latest
+    container: geerlingguy/docker-centos7-ansible:latest
     strategy:
       matrix:
         ansible:
@@ -22,7 +23,7 @@ jobs:
         with:
           python-version: '3.x'
       - name: Install test dependencies.
-        run: pip3 install ansible==${{ matrix.ansible }}  molecule[docker] docker testinfra yamllint ansible-lint flake8
+        run: pip3 install ansible==${{ matrix.ansible }}  molecule[docker] docker yamllint ansible-lint flake8
       - name: Run Molecule tests.
         run: molecule test
         env:
