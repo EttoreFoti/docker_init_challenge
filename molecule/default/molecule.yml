@@ -6,9 +6,11 @@ driver:
 platforms:
   - name: instance1
     image: geerlingguy/docker-centos7-ansible:latest #image built for complete testing of real testings
-    command: ""
+    command: "/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro #needed to use systemd
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /lib/modules:/lib/modules:ro
     privileged: true #it is needed for systemd, it should be done only with trusted software
     pre_build_image: true
     groups: 
@@ -32,8 +34,8 @@ provisioner:
         - instance2
 verifier:
   name: ansible
-# lint: |
-#  set -e
-#  yamllint .
-#  ansible-lint
-#  flake8
+ lint: |
+  set -e
+  yamllint .
+  ansible-lint
+  flake8

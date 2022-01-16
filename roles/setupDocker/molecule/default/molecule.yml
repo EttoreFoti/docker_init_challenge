@@ -5,7 +5,7 @@ driver:
   name: docker
 platforms:
   - name: instance1
-    image: milcom/centos7-systemd # geerlingguy/docker-centos7-ansible:latest #image built for complete testing of real testings
+    image: geerlingguy/docker-centos7-ansible:latest #image built for complete testing of real testings
     command: "/sbin/init"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro #needed to use systemd
@@ -13,19 +13,12 @@ platforms:
       - /lib/modules:/lib/modules:ro
     privileged: true #it is needed for systemd, it should be done only with trusted software
     pre_build_image: true
-    cap_add:
-      - SYS_ADMIN
-    security_opt:
-      - seccomp:unconfined
-    tmpfs:
-      - /run
-      - /run/lock
 provisioner:
   name: ansible
 verifier:
   name: ansible
-# lint: |
-#  set -e
-#  yamllint .
-#  ansible-lint
-#  flake8
+ lint: |
+  set -e
+  yamllint .
+  ansible-lint
+  flake8
