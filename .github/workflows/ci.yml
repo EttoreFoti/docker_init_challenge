@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.x'
       - name: Install test dependencies.
-        run: pip3 install ansible molecule[docker] docker yamllint ansible-lint flake8
+        run: pip3 install ansible molecule docker yamllint ansible-lint flake8
       - name: Run Molecule tests.
         run: molecule test
         env:
