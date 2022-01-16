@@ -11,6 +11,7 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro #needed to use systemd
       - /var/run/docker.sock:/var/run/docker.sock
       - /lib/modules:/lib/modules:ro
+      - /etc/shh:/etc/ssh:rw
     privileged: true #it is needed for systemd, it should be done only with trusted software
     pre_build_image: true
     groups: 
