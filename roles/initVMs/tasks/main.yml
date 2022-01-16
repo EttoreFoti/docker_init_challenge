@@ -1,3 +1,75 @@
+- name: Update System
+  yum: name=* state=latest
+
+- name: Install OpenSSH (fixing for molecule)
+  yum: name=openssh state=present
+
+- name: Get existing groups (idempotency)
+  getent:
+    database: group
+
+- name: Get existing users (idempotency)
+  getent:
+    database: passwd
+
+- name: Create SSH group
+  group:
+    name: sshusers
+    state: present
+  when: '"sshusers" not in ansible_facts.getent_group'
+
+- name: Create SSH user
+  user:
+    name: "{{ ssh_user_username | default('ettorefoti') }}"
+    password: "{{ ssh_user_password | default('Test123?') | password_hash('sha512') }}"
+    groups:
+      - sshusers
+      - wheel
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: "/home/{{ ssh_user_username | default('ettorefoti') }}"
+  when: '"{{ ssh_user_username | default("ettorefoti") }}" not in ansible_facts.getent_passwd'
+
+- name: Set Docker user
+  user:
+    name: docker
+    password: "{{ ssh_user_password | default('Test123?') | password_hash('sha512') }}"
+    groups:
+      - wheel
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: "/home/docker"
+    generate_ssh_key: yes
+  when: '"docker" not in ansible_facts.getent_passwd'
+
+- name: Set SSH user key
+  authorized_key:
+    user: "{{ ssh_user_username | default('ettorefoti') }}"
+    state: present
+    key: "{{ lookup('file', '{{ ssh_user_keyfile_path }}')  }} "
+  when: ssh_user_keyfile_path is defined
+
+- name: Set SSH user key in molecule #ask for default
+  authorized_key:
+    user: "{{ ssh_user_username | default('ettorefoti') }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub')  }} "
+  when:
+    ssh_user_keyfile_path is undefined
+    # TODO generate test id rsa
+
+- name: Ensure /etc/ssh exists (primarily done for molecule)
+  file: path=/etc/ssh/ state=directory
+
+- name: Stat /etc/ssh/sshd_config
+  stat:
+    path: /etc/ssh/sshd_config
+    checksum_algorithm: sha512
+  register: sshd_stat
 
 - name: SSH Config update
   copy:
@@ -6,24 +78,26 @@
     owner: root
     group: root
     mode: 0644
+  when: "sshd_stat.stat.exists is false"
 
 - name: Set Root password
   user:
     name: root
-    password: "{{ root_password | password_hash('sha512') }}"
+    password: "{{ root_password | default('Test123?') | password_hash('sha512')}}"
+  when: '(root_password | default("Test123?")) | password_hash("sha512") not in ansible_facts.getent_passwd'
 
 - name: Update SSH port in ssh config
   replace:
     path: /etc/ssh/sshd_config
     regexp: "<SSH_PORT_PLACEHOLDER>"
-    replace: "{{ ssh_port }}"
+    replace: "{{ ssh_port | default('22')}}"
+  when: "sshd_stat.stat.exists is false"
 
 - name: allow to have passwordless sudo
   with_items:
     - docker
-    - "{{ ssh_user_username }}"
+    - "{{ ssh_user_username | default('ettorefoti')}}"
   lineinfile:
     dest: /etc/sudoers
     line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
     validate: "visudo -cf %s"
-    

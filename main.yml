@@ -1,7 +1,6 @@
 ---
 - name: Install Docker and Docker Compose on CentOS
   hosts: all
-  gather_facts: true
   become: yes
   user: root
   roles:
