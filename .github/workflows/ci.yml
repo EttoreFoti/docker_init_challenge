@@ -9,7 +9,7 @@ jobs:
     name: Molecule
     runs-on: ubuntu-latest
     container: geerlingguy/docker-centos7-ansible:latest
-    strategy:
+    #strategy:
       #matrix:
     steps:
       - name: Check out the codebase.
