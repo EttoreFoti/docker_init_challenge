@@ -1,5 +1,0 @@
-- name: Converge
-  hosts: all
-  tasks:
-    - name: test
-      import_tasks: ../../tasks/main.yml
