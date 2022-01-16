@@ -80,12 +80,6 @@
     mode: 0644
   when: "sshd_stat.stat.exists is false"
 
-- name: Set Root password
-  user:
-    name: root
-    password: "{{ root_password | default('Test123?') | password_hash('sha512')}}"
-  when: '(root_password | default("Test123?")) | password_hash("sha512") not in ansible_facts.getent_passwd'
-
 - name: Update SSH port in ssh config
   replace:
     path: /etc/ssh/sshd_config
