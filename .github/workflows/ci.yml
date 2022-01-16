@@ -8,7 +8,7 @@ jobs:
   test:
     name: Molecule
     runs-on: ubuntu-latest
-    container: geerlingguy/docker-centos7-ansible:latest
+    #container: geerlingguy/docker-centos7-ansible:latest
     #strategy:
       #matrix:
     steps:
