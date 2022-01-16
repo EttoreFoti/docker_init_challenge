@@ -53,15 +53,6 @@
     key: "{{ lookup('file', '{{ ssh_user_keyfile_path }}')  }} "
   when: ssh_user_keyfile_path is defined
 
-- name: Generate ssh key when not given
-  user:
-    name: 
-    generate_ssh_key: yes
-    ssh_key_type: rsa
-    ssh_key_bits: 4096
-    ssh_key_file: "/home/.ssh/{{ ssh_user_username | default('ettorefoti') }}/id_rsa"
-    force: no
-
 - name: Set SSH user key in molecule #ask for default
   authorized_key:
     user: "{{ ssh_user_username | default('ettorefoti') }}"
