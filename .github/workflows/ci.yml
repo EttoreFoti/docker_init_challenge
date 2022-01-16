@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     container: geerlingguy/docker-centos7-ansible:latest
     strategy:
-      matrix:
+      #matrix:
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v2
