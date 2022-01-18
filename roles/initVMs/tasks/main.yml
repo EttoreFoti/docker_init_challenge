@@ -81,7 +81,7 @@
 
 - name: SSH Config update
   copy:
-    src: sshd_config
+    src: files/sshd_config
     dest: /etc/ssh/sshd_config
     owner: root
     group: root
