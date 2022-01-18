@@ -1,7 +1,8 @@
 - name: Check if Docker is installed
   shell: systemctl status docker
   register: docker_check
-  ignore_errors: yes
+  tags: swarm
+  ignore_errors: true
 
 - name: Install Docker
   import_tasks: installDocker.yml
@@ -22,7 +23,11 @@
 - name: Check if Docker Compose is installed
   shell: docker-compose --version
   register: docker_compose_check
-  ignore_errors: yes
+  ignore_errors: true
+
+- name: debug
+  debug:
+    msg: "check: {{ docker_compose_check }} and: {{ docker_compose_check.msg.find('command not found') }}"
 
 - name: Download and install Docker Compose
   get_url:
@@ -31,17 +36,17 @@
     mode: 0755
   when:
     - docker_compose_check.msg is defined
-    - docker_compose_check.msg.find('No such file or directory') != -1
+    - docker_compose_check.msg.find('command not found') == -1
 
 - name: Setup Docker REST API
   lineinfile:
     path: /lib/systemd/system/docker.service
     regexp: 'ExecStart=*'
-    line: ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock -H=tcp://0.0.0.0:2377
+    line: ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock -H=tcp://0.0.0.0:5555
     backrefs: yes
 
 - name: reload systemd
-  become: yes
+  become: true
   shell: systemctl daemon-reload
 
 - name: Start the Docker daemon
@@ -49,15 +54,16 @@
     name: docker
     state: restarted
 
-- name: Configure Hosts File
-  lineinfile: path=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
-  when: hostvars[item].ansible_default_ipv4.address is defined
+- name: check lol
+  debug:  
+    msg: "{{ hostvars[item].ansible_nodename }} {{ item }}" #.ansible_default_ipv4.address
   with_items: "{{ groups['all'] }}"
 
-#- name: Generate SSH keys
-#  shell: ssh-keygen -b 2048 -f /home/docker/.ssh/id_rsa -t rsa -q -N ""
-#  args:
-#    creates: /home/docker/.ssh/id_rsa
+- name: Configure Hosts File
+  lineinfile: path=/etc/hosts regexp='.*{{ hostvars[item].ansible_nodename }}$' line="{{item}} {{ hostvars[item].ansible_nodename }}" state=present
+  #lineinfile: path=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
+  #when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: "{{ groups['all'] }}"
 
 - name: Copy Public Key Locally
   fetch:
@@ -67,7 +73,7 @@
 
 - name: Copy SSH Configuration
   copy:
-    src: ssh_config
+    src: ../files/ssh_config
     dest: /home/docker/.ssh/config
     mode: 0644
 

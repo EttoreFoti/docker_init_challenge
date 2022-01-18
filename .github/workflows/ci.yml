@@ -1,4 +1,4 @@
-name: CI
+name: CI Testing initVMs role only
 'on':
   pull_request:
   push:
@@ -8,7 +8,6 @@ jobs:
   test:
     name: Molecule
     runs-on: ubuntu-latest
-    #container: geerlingguy/docker-centos7-ansible:latest
     #strategy:
       #matrix:
     steps:

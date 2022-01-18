@@ -21,10 +21,10 @@
   roles:
       - setupDockerSwarm
 
-- name: Generate Token and Join Workers
-  hosts: workers
-  roles:
-      - joinWorkers
+#- name: Generate Token and Join Workers
+#  hosts: workers
+#  roles:
+#      - joinWorkers
 
 
 

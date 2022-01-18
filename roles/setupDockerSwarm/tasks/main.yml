@@ -6,8 +6,7 @@
 
 - name: Initialize Docker Swarm
   shell: >
-    docker swarm init
-    --advertise-addr={{ groups['masters'][0] }}:2377
+    docker swarm init --advertise-addr={{ groups['masters'][0] }}:5555
   when: swarm_status.rc != 0
   run_once: true
   tags: swarm
@@ -18,9 +17,14 @@
   tags: swarm
 
 - name: Get the worker join-token
-  shell: "echo '' > /tmp/worker_join.txt && docker swarm join-token worker > /tmp/worker_join.sh"
+  shell: "docker swarm join-token --quiet worker" # "echo '' > /tmp/worker_join.sh && docker swarm join-token worker > /tmp/worker_join.sh"
   register: worker_token
   tags: swarm
+
+- name: Join Workers
+  shell: "docker swarm join --token {{ worker_token.stdout }} {{ groups['masters'][0] }}:2377"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['workers'] }}"
 
 
 

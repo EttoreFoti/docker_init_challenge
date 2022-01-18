@@ -78,7 +78,7 @@
     owner: root
     group: root
     mode: 0644
-  when: "sshd_stat.stat.exists is false"
+  when: "sshd_stat.stat.exists is false" #TODO compare hashes when the file exists
 
 - name: Update SSH port in ssh config
   replace:

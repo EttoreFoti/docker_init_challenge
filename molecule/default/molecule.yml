@@ -38,8 +38,6 @@ provisioner:
         - instance2
 verifier:
   name: ansible
- lint: |
-  set -e
-  yamllint .
-  ansible-lint
-  flake8
+  lint: |
+    set -e
+    ansible-lint
