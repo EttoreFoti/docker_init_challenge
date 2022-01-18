@@ -3,6 +3,8 @@ dependency:
   name: galaxy
 driver:
   name: docker
+lint: |
+  set -e ansible-lint
 platforms:
   - name: instance1
     image: geerlingguy/docker-centos7-ansible:latest #image built for complete testing of real testings
@@ -38,8 +40,3 @@ provisioner:
         - instance2
 verifier:
   name: ansible
-lint: |
-  set -e
-  yamllint .
-  ansible-lint
-  flake8
