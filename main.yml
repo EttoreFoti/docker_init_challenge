@@ -2,6 +2,7 @@
 - name: Install Docker and Docker Compose on CentOS
   hosts: all
   become: yes
+  gather_facts: true
   user: root
   roles:
       - initVMs
