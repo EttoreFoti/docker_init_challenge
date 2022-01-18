@@ -11,7 +11,11 @@
     state: present
   with_items: 
     - yum-utils
-    - docker-ce
-    - docker-ce-cli
+    - yumlock
+    - "docker-ce-{{ docker_version }}.ce-1.el7.centos"
+    - "docker-ce-cli-{{ docker_version }}.ce-1.el7.centos"
     - containerd.io
+
+- name: "Pin Docker Version"
+  shell: "yumlock docker*"
     

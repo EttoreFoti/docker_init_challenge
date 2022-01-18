@@ -49,7 +49,7 @@ resource "null_resource" "installansible" {
 resource "null_resource" "runansible" {
   count = "1"
   provisioner "local-exec" {
-    command = "ansible-playbook -i ansible-hosts-config main.yml --extra-vars 'ansible_ssh_user=root ssh_port=${var.ssh_port} ansible_ssh_private_key_file=${var.hcloud_ssh_key_local_path} ssh_user_keyfile_path=${var.ssh_user_keyfile_path} root_password=${var.root_password} ssh_user_username=${var.ssh_user_username} ssh_user_password=${var.ssh_user_password}'"
+    command = "ansible-playbook -i ansible-hosts-config main.yml --extra-vars 'docker_version=${var.docker_version} ansible_ssh_user=root ssh_port=${var.ssh_port} ansible_ssh_private_key_file=${var.hcloud_ssh_key_local_path} ssh_user_keyfile_path=${var.ssh_user_keyfile_path} root_password=${var.root_password} ssh_user_username=${var.ssh_user_username} ssh_user_password=${var.ssh_user_password}'"
   }
   depends_on = [
     null_resource.installansible,

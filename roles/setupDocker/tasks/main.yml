@@ -54,11 +54,6 @@
     name: docker
     state: restarted
 
-- name: check lol
-  debug:  
-    msg: "{{ hostvars[item].ansible_nodename }} {{ item }}" #.ansible_default_ipv4.address
-  with_items: "{{ groups['all'] }}"
-
 - name: Configure Hosts File
   lineinfile: path=/etc/hosts regexp='.*{{ hostvars[item].ansible_nodename }}$' line="{{item}} {{ hostvars[item].ansible_nodename }}" state=present
   #lineinfile: path=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present

@@ -4,7 +4,22 @@
 - name: Verify
   hosts: all
   gather_facts: false
+  package_facts:
+    manager: auto
   tasks:
-  - name: Example assertion
+  - name: Assert that OpenSSH is installed
     assert:
-      that: true
+      that: 'openssh in ansible_facts.packages'
+  - name: Get existing groups (idempotency)
+    getent:
+      database: group
+  - name: Get existing users (idempotency)
+    getent:
+      database: passwd
+  - name: Assert that all required groups have been created
+    assert: 
+      that: '"sshusers" in ansible_facts.getent_group and "docker" in ansible_facts.getent_group'
+  - name: Assert that all required users have been created
+    assert: 
+      that: '{{ ssh_user_username | default("ettorefoti") }} in ansible_facts.getent_passwd and "docker" in ansible_facts.getent_passwd'
+  
