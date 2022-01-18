@@ -1,5 +1,5 @@
 - name: Check if Docker is installed
-  shell: systemctl status docker
+  command: systemctl status docker
   register: docker_check
   tags: swarm
   ignore_errors: true
@@ -21,7 +21,7 @@
     masked: no
 
 - name: Check if Docker Compose is installed
-  shell: docker-compose --version
+  command: docker-compose --version
   register: docker_compose_check
   ignore_errors: true
 
@@ -47,7 +47,7 @@
 
 - name: reload systemd
   become: true
-  shell: systemctl daemon-reload
+  command: systemctl daemon-reload
 
 - name: Start the Docker daemon
   systemd:
@@ -60,7 +60,7 @@
   with_items: "{{ groups['all'] }}"
 
 - name: Configure Hosts File
-  lineinfile: path=/etc/hosts regexp='.*{{ hostvars[item].ansible_nodename }}$' line="{{item}} {{ hostvars[item].ansible_nodename }}" state=present
+  lineinfile: path=/etc/hosts regexp='.*{{ hostvars[item].ansible_nodename }}$' line="{{ item }} {{ hostvars[item].ansible_nodename }}" state=present
   #lineinfile: path=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
   #when: hostvars[item].ansible_default_ipv4.address is defined
   with_items: "{{ groups['all'] }}"
@@ -73,7 +73,7 @@
 
 - name: Copy SSH Configuration
   copy:
-    src: ../files/ssh_config
+    src: ssh_config
     dest: /home/docker/.ssh/config
     mode: 0644
 
@@ -83,7 +83,7 @@
     path: ~/.ssh/known_hosts
 
 - name: run ssh-keyscan to add keys to known_hosts
-  shell: "ssh-keyscan {{ item }} >> ~/.ssh/known_hosts"
+  command: "ssh-keyscan {{ item }} >> ~/.ssh/known_hosts"
   with_items: "{{ groups['all'] }}"
 
 - name: Copy Public Key to Other Hosts

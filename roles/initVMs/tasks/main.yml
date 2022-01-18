@@ -81,7 +81,7 @@
 
 - name: SSH Config update
   copy:
-    src: ../files/sshd_config
+    src: sshd_config
     dest: /etc/ssh/sshd_config
     owner: root
     group: root
@@ -92,13 +92,13 @@
   replace:
     path: /etc/ssh/sshd_config
     regexp: "<SSH_PORT_PLACEHOLDER>"
-    replace: "{{ ssh_port | default('22')}}"
+    replace: "{{ ssh_port | default('22') }}"
   when: "sshd_stat.stat.exists is false"
 
 - name: allow to have passwordless sudo
   with_items:
     - docker
-    - "{{ ssh_user_username | default('ettorefoti')}}"
+    - "{{ ssh_user_username | default('ettorefoti') }}"
   lineinfile:
     dest: /etc/sudoers
     line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"

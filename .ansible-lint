@@ -1,0 +1,9 @@
+skip_list:
+    - role-name
+    - meta-no-info
+    - meta-incorrect
+    - command-instead-of-module
+    - no-changed-when
+    - package-latest
+    - no-jinja-when
+    - risky-file-permissions
