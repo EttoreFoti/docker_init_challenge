@@ -2,8 +2,6 @@
 - name: Verify
   hosts: all
   gather_facts: true
-  package_facts:
-    manager: auto
   tasks:
   - name: Gather Package Facts
     package_facts:
