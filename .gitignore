@@ -4,3 +4,5 @@ terraform.tfstate
 terraform.tfstate.backup
 versions.tf
 allvars
+ansible-host-config
+.terraform.lock.hcl
