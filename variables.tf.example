@@ -63,3 +63,7 @@ variable "image" {
     type = string
     default = "ubuntu-18.04"
 }
+variable "docker_version" {
+    type = string
+    default = "20.10.12-3"
+}
