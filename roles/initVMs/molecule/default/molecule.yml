@@ -38,7 +38,7 @@ provisioner:
         - instance2
 verifier:
   name: ansible
- lint: |
+lint: |
   set -e
   yamllint .
   ansible-lint
