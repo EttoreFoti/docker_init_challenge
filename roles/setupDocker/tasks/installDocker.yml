@@ -10,8 +10,12 @@
     name: "{{ item }}"
     state: present
   with_items: 
+    - versionlock
     - yum-utils
     - docker-ce
     - docker-ce-cli
     - containerd.io
+
+- name: Pin Docker after install
+  command: "yum versionlock docker*"
     
